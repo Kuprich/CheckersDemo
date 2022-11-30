@@ -1,0 +1,35 @@
+﻿$black-cell: #b5802d;
+$white-cell: #fff6bd;
+
+.board
+{
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+
+    &__row {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+
+        &:nth-child(2n) {
+            .board__col:nth-child(2n+1) {
+                background: $black-cell;
+            }
+        }
+
+        &:nth-child(2n+1) {
+            .board__col:nth-child(2n) {
+                background: $black-cell;
+            }
+        }
+    }
+
+    &__col {
+        border: 1px solid silver;
+        margin: 0 0 -1px -1px;
+        width: 80px;
+        height: 80px;
+        background: $white-cell;
+    }
+}
