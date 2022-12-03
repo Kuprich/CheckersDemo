@@ -7,11 +7,14 @@
             @for (var j = 0; j < 8; j++)
             {
                 int col = j;
-                var checker = _blackCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
-                if (checker == null)
-                {
-                    checker = _whiteCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
-                }
+
+                var checker = _checkers.FirstOrDefault(x => x.Row == row && x.Column == col);
+
+                @* var checker = _blackCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
+        if (checker == null)
+        {
+        checker = _whiteCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
+        }*@
 
                 bool canMoveHere = cellsPossible.Contains((row, col));
 
@@ -19,7 +22,7 @@
                     @{
                         if (checker != null)
                         {
-                            <div @onclick="() => CheckerClicked(checker)" class="checker checker-@checker.Color @(_activeChecker == checker ? "checker-active": "") @(checker.Direction == CheckerDirection.Both ? "checker-king" : "")"></div>
+                            <div @onclick="() => CheckerClicked(checker)" class="checker checker-@(checker.IsWhite ? "white" : "black" ) @(_activeChecker == checker ? "checker-active": "") @(checker.Direction == CheckerDirection.Both ? "checker-king" : "")"></div>
                         }
                     }
                 </div>
@@ -30,9 +33,13 @@
 
 
 @code {
-    List<Checker> _whiteCheckers = new List<Checker>();
-    List<Checker> _blackCheckers = new List<Checker>();
+    List<Checker> _checkers = new();
+    //List<Checker> _whiteCheckers = new ();
+    //List<Checker> _blackCheckers = new ();
+
+
     Checker? _activeChecker = null;
+    Checker? _beingAttackedChecker = null;
     bool _whiteTurn = true;
 
     List<(int row, int col)> cellsPossible = new();
@@ -43,7 +50,7 @@
         {
             for (int col = (row + 1) % 2; col < 8; col += 2)
             {
-                _blackCheckers.Add(new Checker(row, col, CheckerDirection.Down, "black"));
+                _checkers.Add(new Checker(row, col, CheckerDirection.Down, isWhite: false));
             }
         }
 
@@ -51,7 +58,7 @@
         {
             for (int col = (row + 1) % 2; col < 8; col += 2)
             {
-                _whiteCheckers.Add(new Checker(row, col, CheckerDirection.Up, "white"));
+                _checkers.Add(new Checker(row, col, CheckerDirection.Up, isWhite: true));
             }
         }
 
@@ -60,8 +67,8 @@
 
     private void CheckerClicked(Checker checker)
     {
-        if (_whiteTurn && checker.Color != "white" ||
-            !_whiteTurn && checker.Color != "black")
+        if (_whiteTurn && !checker.IsWhite ||
+            !_whiteTurn && checker.IsWhite)
         {
             return;
         }
@@ -77,36 +84,75 @@
         if (_activeChecker != null)
         {
             List<int> rowsPossible = new();
+            List<int> colsPossible = new();
+
+
+            // serch possible cells for a simple move
 
             if (_activeChecker.Direction == CheckerDirection.Both)
             {
-                rowsPossible.AddRange(new[] { _activeChecker.Row + 1, _activeChecker.Row - 1 });
+                rowsPossible.AddBoardValues(new[] { _activeChecker.Row + 1, _activeChecker.Row - 1 });
             }
             else
             {
-                rowsPossible.Add(_activeChecker.Row + (1 * (_activeChecker.Direction == CheckerDirection.Down ? 1 : -1)));
+                rowsPossible.AddBoardValue(_activeChecker.Row + (1 * (_activeChecker.Direction == CheckerDirection.Down ? 1 : -1)));
             }
 
-            foreach (int row in rowsPossible)
+            colsPossible.AddBoardValues(new[] { _activeChecker.Column + 1, _activeChecker.Column - 1 });
+
+            // serch possible cells for a jump move
+
+            List<int> rowsPossibleForJump = new();
+            List<int> colsPossibleForJump = new();
+
+            rowsPossibleForJump.AddBoardValues(new[] { _activeChecker.Row + 2, _activeChecker.Row - 2 });
+            colsPossibleForJump.AddBoardValues(new[] { _activeChecker.Column + 2, _activeChecker.Column - 2 });
+
+            foreach (int row in rowsPossibleForJump)
+                foreach (int col in colsPossibleForJump)
+                    if (Math.Abs(_activeChecker.Column - col) == Math.Abs(_activeChecker.Row - row))
+                        EvaluateSpotForJump(row, col);
+
+            if (!cellsPossible.Any())
             {
-                EvaluateSpot(row, _activeChecker.Column + 1);
-                EvaluateSpot(row, _activeChecker.Column - 1);
+                foreach (int row in rowsPossible)
+                    foreach (int col in colsPossible)
+                        if (Math.Abs(_activeChecker.Column - col) == Math.Abs(_activeChecker.Row - row))
+                            EvaluateSpotForMove(row, col);
             }
-
-            //can jumping here
 
         }
     }
-    private void EvaluateSpot(int row, int col)
+
+    private void EvaluateSpotForJump(int row, int col)
     {
+        var checker = _checkers.FirstOrDefault(x => x.Row == row && x.Column == col);
 
-        var blackChecker = _blackCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
-        var whiteChecker = _whiteCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
+        // checker jump variant
+        if (checker == null)
+        {
+            _beingAttackedChecker = _checkers.FirstOrDefault(x => x.Row == (_activeChecker?.Row + row) / 2 && x.Column == (_activeChecker!.Column + col) / 2);
+            if (_beingAttackedChecker != null && _activeChecker?.IsWhite != _beingAttackedChecker.IsWhite)
+            {
+                cellsPossible.Add((row, col));
+            }
+        }
+    }
 
-        if (blackChecker == null && whiteChecker == null)
+    private void EvaluateSpotForMove(int row, int col)
+    {
+        //simple move variant
+        var checker = _checkers.FirstOrDefault(x => x.Row == row && x.Column == col);
+        //var blackChecker = _blackCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
+        //var whiteChecker = _whiteCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
+
+
+
+        if (checker == null)
         {
             cellsPossible.Add((row, col));
         }
+
     }
     private void MoveChecker(int row, int col)
     {
@@ -119,8 +165,13 @@
             _activeChecker.Column = col;
             _activeChecker.Row = row;
 
-            if (_activeChecker.Row == 0 && _activeChecker.Color == "white" ||
-                _activeChecker.Row == 7 && _activeChecker.Color == "black")
+            if (_beingAttackedChecker != null)
+            {
+                _checkers.Remove(_beingAttackedChecker);
+            }
+
+            if (_activeChecker.Row == 0 && _activeChecker.IsWhite ||
+                _activeChecker.Row == 7 && !_activeChecker.IsWhite)
             {
                 _activeChecker.Direction = CheckerDirection.Both;
             }
