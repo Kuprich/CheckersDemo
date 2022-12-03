@@ -1,10 +1,28 @@
-﻿<div class="board">
+﻿
+<div class="board">
     @for (int i = 0; i < 8; i++)
     {
+        int row = i;
         <div class="board__row">
             @for (var j = 0; j < 8; j++)
             {
-                <div class="board__col"></div>
+                int col = j;
+                var checker = blackCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
+                if (checker == null)
+                {
+                    checker = whiteCheckers.FirstOrDefault(x => x.Row == row && x.Column == col);
+                }
+
+                bool canMoveHere = rowsPossible.Contains(row) && colsPossible.Contains(col) && checker == null;
+
+                <div @onclick="() => MoveChecker(row, col)" class="board__col @(canMoveHere ? "board__col-active": "")">
+                    @{
+                        if (checker != null)
+                        {
+                            <div @onclick="() => {activeChecker = checker; EvaluateCheckerSpots();}" class="checker checker-@checker.Color @(activeChecker == checker ? "checker-active": "")"></div>
+                        }
+                    }
+                </div>
             }
         </div>
     }
@@ -12,5 +30,59 @@
 
 
 @code {
+    List<Checker> whiteCheckers = new List<Checker>();
+    List<Checker> blackCheckers = new List<Checker>();
+    Checker? activeChecker = null;
 
+    List<int> rowsPossible = new List<int>();
+    List<int> colsPossible = new List<int>();
+
+    protected override Task OnInitializedAsync()
+    {
+        for (int row = 0; row < 3; row++)
+        {
+            for (int col = (row + 1) % 2; col < 8; col += 2)
+            {
+                blackCheckers.Add(new Checker(row, col, CheckerDirection.Down, "black"));
+            }
+        }
+
+        for (int row = 5; row < 8; row++)
+        {
+            for (int col = (row + 1) % 2; col < 8; col += 2)
+            {
+                whiteCheckers.Add(new Checker(row, col, CheckerDirection.Up, "white"));
+            }
+        }
+
+        return base.OnInitializedAsync();
+    }
+
+    private void EvaluateCheckerSpots()
+    {
+        rowsPossible.Clear();
+        colsPossible.Clear();
+
+        if (activeChecker != null)
+        {
+            rowsPossible.Add(activeChecker.Row + (1 * (activeChecker.Direction == CheckerDirection.Down ? 1 : -1)));
+            colsPossible.AddRange(new[] { activeChecker.Column + 1, activeChecker.Column - 1 });
+        }
+    }
+    private void MoveChecker(int row, int col)
+    {
+
+        bool canMoveHere = rowsPossible.Contains(row) && colsPossible.Contains(col);
+        if (!canMoveHere) return;
+
+        if (activeChecker != null)
+        {
+            activeChecker.Column = col;
+            activeChecker.Row = row;
+        }
+
+        activeChecker = null;
+        EvaluateCheckerSpots();
+
+    }
 }

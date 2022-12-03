@@ -31,5 +31,34 @@ $white-cell: #fff6bd;
         width: 80px;
         height: 80px;
         background: $white-cell;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &-active{
+            box-shadow: inset 0 0 0 3px green;
+            cursor: pointer;
+        }
     }
 }
+
+
+.checker {
+    border-radius: 50%;
+    border: 1px solid #868686;
+    width: 80%;
+    height: 80%;
+    cursor: pointer;
+
+    &-white {
+        background-color: #fff;
+    }
+
+    &-black {
+        background-color: #4f4f4f;
+    }
+
+    &-active{
+        box-shadow: 0 0 0 3px green;
+    }
+}
+
