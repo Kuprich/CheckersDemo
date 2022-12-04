@@ -31,6 +31,7 @@
 
     Checker? _activeChecker = null;
     Checker? _beingAttackedChecker = null;
+    Checker? _attaсkingChecker = null;
     bool _whiteTurn = true;
 
 
@@ -57,6 +58,11 @@
 
     private void CheckerClicked(Checker checker)
     {
+        if (_attaсkingChecker != null && _activeChecker != checker)
+        {
+            return;
+        }
+
         _activeChecker = null;
         _cellsPossible = new();
 
@@ -81,8 +87,6 @@
             return;
         }
 
-        
-        
 
         _cellsPossible = EvaluateCheckerSpots(checker);
 
@@ -175,26 +179,42 @@
         bool canMoveHere = _cellsPossible.Contains(new(row, col));
         if (!canMoveHere) return;
 
+        bool isContinueJump = false;
+
         if (_activeChecker != null)
         {
             _activeChecker.Column = col;
             _activeChecker.Row = row;
-
-            if (_beingAttackedChecker != null)
-            {
-                _checkers.Remove(_beingAttackedChecker);
-
-            }
 
             if (_activeChecker.Row == 0 && _activeChecker.IsWhite ||
                 _activeChecker.Row == 7 && !_activeChecker.IsWhite)
             {
                 _activeChecker.Direction = CheckerDirection.Both;
             }
+
+            if (_beingAttackedChecker != null)
+            {
+                _checkers.Remove(_beingAttackedChecker);
+
+                // Check the possibility of continuing the jump
+                isContinueJump = EvaluateSpotForJump(_activeChecker).Any();
+
+                if (isContinueJump)
+                {
+                    _attaсkingChecker = _activeChecker;
+                    _cellsPossible = EvaluateSpotForJump(_attaсkingChecker);
+                    return;
+                }
+            }
+
+
         }
 
-        _activeChecker = null;
+
+
+        _attaсkingChecker = null;
         _whiteTurn = !_whiteTurn;
+        _activeChecker = null;
         _cellsPossible.Clear();
 
     }
