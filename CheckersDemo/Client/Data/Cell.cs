@@ -36,4 +36,9 @@ public struct Cell
     {
         return !(left == right);
     }
+
+    public override int GetHashCode()
+    {
+        return Row.GetHashCode() ^ Col.GetHashCode();
+    }
 }

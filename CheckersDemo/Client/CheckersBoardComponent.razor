@@ -11,13 +11,15 @@
 
                 var checker = _board.GetChecker(row, col);
 
-                bool canMoveHere = _board.CellsPossible.Contains(new(row, col));
+                bool checkerIsEnabled = _board.EnabledCheckers.Contains(checker);
 
-                <div @onclick="() => _board.MoveChecker(row, col)" class="board__col @(canMoveHere ? "board__col-active": "")">
+                bool cellIsActive = _board.ActiveCells?.Contains(new(row, col)) ?? false;
+
+                <div class="board__cell @(cellIsActive ? "board__cell-active": "")">
                     @{
                         if (checker != null)
                         {
-                            <div @onclick="() => CheckerClicked(checker)" class="checker checker-@(checker.IsWhite ? "white" : "black" ) @(_board.ActiveChecker == checker ? "checker-active": "") @(checker.Direction == CheckerDirection.Both ? "checker-king" : "")"></div>
+                            <div @onclick="() => CheckerClicked(checker)" class="checker checker-@(checker.IsWhite ? "white" : "black" ) @(checkerIsEnabled ? "checker-enabled": "") @(checker.Direction == CheckerDirection.Both ? "checker-king" : "")"></div>
                         }
                     }
                 </div>
@@ -32,59 +34,64 @@
 
     private void CheckerClicked(Checker checker)
     {
-        if (_board.AttaсkingChecker != null && _board.ActiveChecker != checker)
-        {
-            return;
+        if (_board.EnabledCheckers.Contains(checker)){
+            _board.ActiveChecker = checker;
         }
 
-        _board.ActiveChecker = null;
-        _board.CellsPossible = new();
+        //if (_board.AttaсkingChecker != null && _board.ActiveChecker != checker)
+        //{
+        //    return;
+        //}
 
-        //order of moves;
-        if (_board.WhiteTurn && !checker.IsWhite ||
-            !_board.WhiteTurn && checker.IsWhite) return;
+        //_board.ActiveChecker = null;
+        //_board.CellsPossible = new();
 
-        // possibility of jump
-        bool isPossibleJump = false;
+        ////order of moves;
+        //if (_board.WhiteTurn && !checker.IsWhite ||
+        //    !_board.WhiteTurn && checker.IsWhite) return;
 
-        var checkers = _board.Checkers.Where(x => x.IsWhite.Equals(_board.WhiteTurn)).ToList();
+        //// possibility of jump
+        //bool isPossibleJump = false;
 
-        foreach (var ch in checkers)
-            if (ch != null && _board.EvaluateSpotForJump(ch).Any())
-            {
-                isPossibleJump = true;
-                break;
-            }
+        //var checkers = _board.Checkers.Where(x => x.IsWhite.Equals(_board.WhiteTurn)).ToList();
 
-        if (!isPossibleJump.Equals(_board.EvaluateSpotForJump(checker).Any()))
-        {
-            return;
-        }
+        //foreach (var ch in checkers)
+        //    if (ch != null && _board.EvaluateSpotForJump(ch).Any())
+        //    {
+        //        isPossibleJump = true;
+        //        break;
+        //    }
+
+        //if (!isPossibleJump.Equals(_board.EvaluateSpotForJump(checker).Any()))
+        //{
+        //    return;
+        //}
 
 
-        _board.CellsPossible = EvaluateCheckerSpots(checker);
+        //_board.CellsPossible = EvaluateCheckerSpots(checker);
 
-        if (!_board.CellsPossible.Any())
-        {
-            return;
-        }
+        //if (!_board.CellsPossible.Any())
+        //{
+        //    return;
+        //}
 
-        _board.ActiveChecker = checker;
+        //_board.ActiveChecker = checker;
 
     }
 
     private List<Cell> EvaluateCheckerSpots(Checker checker)
     {
-        List<Cell> result = new();
+        return new();
+        //List<Cell> result = new();
 
-        result.AddRange(_board.EvaluateSpotForJump(checker));
+        //result.AddRange(_board.EvaluateSpotForJump(checker));
 
-        if (!result.Any())
-        {
-            result.AddRange(_board.EvaluateSpotForMove(checker));
-        }
+        //if (!result.Any())
+        //{
+        //    result.AddRange(_board.EvaluateSpotForMove(checker));
+        //}
 
-        return result;
+        //return result;
     }
 
 }
