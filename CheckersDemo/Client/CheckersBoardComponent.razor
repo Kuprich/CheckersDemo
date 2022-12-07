@@ -9,13 +9,15 @@
             {
                 int col = j;
 
-                var checker = _board.GetChecker(row, col);
+                var cell = new Cell(row, col);
+
+                var checker = _board.GetChecker(cell);
 
                 bool checkerIsEnabled = _board.EnabledCheckers.Contains(checker);
 
-                bool cellIsActive = _board.ActiveCells?.Contains(new(row, col)) ?? false;
+                bool cellIsActive = _board.ActiveCells?.Contains(cell) ?? false;
 
-                <div class="board__cell @(cellIsActive ? "board__cell-active": "")">
+                <div @onclick="() => CellClicked(cell)" class="board__cell @(cellIsActive ? "board__cell-active": "")">
                     @{
                         if (checker != null)
                         {
@@ -34,64 +36,71 @@
 
     private void CheckerClicked(Checker checker)
     {
-        if (_board.EnabledCheckers.Contains(checker)){
+        if (_board.EnabledCheckers.Contains(checker))
+        {
             _board.ActiveChecker = checker;
         }
-
-        //if (_board.AttaсkingChecker != null && _board.ActiveChecker != checker)
-        //{
-        //    return;
-        //}
-
-        //_board.ActiveChecker = null;
-        //_board.CellsPossible = new();
-
-        ////order of moves;
-        //if (_board.WhiteTurn && !checker.IsWhite ||
-        //    !_board.WhiteTurn && checker.IsWhite) return;
-
-        //// possibility of jump
-        //bool isPossibleJump = false;
-
-        //var checkers = _board.Checkers.Where(x => x.IsWhite.Equals(_board.WhiteTurn)).ToList();
-
-        //foreach (var ch in checkers)
-        //    if (ch != null && _board.EvaluateSpotForJump(ch).Any())
-        //    {
-        //        isPossibleJump = true;
-        //        break;
-        //    }
-
-        //if (!isPossibleJump.Equals(_board.EvaluateSpotForJump(checker).Any()))
-        //{
-        //    return;
-        //}
-
-
-        //_board.CellsPossible = EvaluateCheckerSpots(checker);
-
-        //if (!_board.CellsPossible.Any())
-        //{
-        //    return;
-        //}
-
-        //_board.ActiveChecker = checker;
-
     }
 
-    private List<Cell> EvaluateCheckerSpots(Checker checker)
+    private void CellClicked(Cell cell)
     {
-        return new();
-        //List<Cell> result = new();
-
-        //result.AddRange(_board.EvaluateSpotForJump(checker));
-
-        //if (!result.Any())
-        //{
-        //    result.AddRange(_board.EvaluateSpotForMove(checker));
-        //}
-
-        //return result;
+        if (_board.ActiveCells?.Contains(cell) != false){
+            _board.MoveActiveCheckerTo(cell);
+        }
     }
+
+    //if (_board.AttaсkingChecker != null && _board.ActiveChecker != checker)
+    //{
+    //    return;
+    //}
+
+    //_board.ActiveChecker = null;
+    //_board.CellsPossible = new();
+
+    ////order of moves;
+    //if (_board.WhiteTurn && !checker.IsWhite ||
+    //    !_board.WhiteTurn && checker.IsWhite) return;
+
+    //// possibility of jump
+    //bool isPossibleJump = false;
+
+    //var checkers = _board.Checkers.Where(x => x.IsWhite.Equals(_board.WhiteTurn)).ToList();
+
+    //foreach (var ch in checkers)
+    //    if (ch != null && _board.EvaluateSpotForJump(ch).Any())
+    //    {
+    //        isPossibleJump = true;
+    //        break;
+    //    }
+
+    //if (!isPossibleJump.Equals(_board.EvaluateSpotForJump(checker).Any()))
+    //{
+    //    return;
+    //}
+
+
+    //_board.CellsPossible = EvaluateCheckerSpots(checker);
+
+    //if (!_board.CellsPossible.Any())
+    //{
+    //    return;
+    //}
+
+    //_board.ActiveChecker = checker;
+
+    //private List<Cell> EvaluateCheckerSpots(Checker checker)
+    //{
+    //    return new();
+    //    //List<Cell> result = new();
+
+    //    //result.AddRange(_board.EvaluateSpotForJump(checker));
+
+    //    //if (!result.Any())
+    //    //{
+    //    //    result.AddRange(_board.EvaluateSpotForMove(checker));
+    //    //}
+
+    //    //return result;
+    //}
 
 }

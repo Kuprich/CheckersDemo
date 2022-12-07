@@ -11,9 +11,10 @@ public class CheckersBoard
     public List<Cell> CellsPossible = new();
 
     public Checker? ActiveChecker { get; set; }
-    public Cell[]? ActiveCells => GetPossibleMoves(ActiveChecker).ToArray();
+    public Cell[]? ActiveCells => GetPossibleMoves(ActiveChecker).Select(x => x.To).Distinct().ToArray();
 
     public Checker? AttaсkingChecker { get; set; }
+    public Checker? ToBeRemovedChecker { get; set; }
 
     public bool WhiteTurn { get; set; } = true;
 
@@ -45,36 +46,87 @@ public class CheckersBoard
             }
     }
 
-    public List<Cell> GetPossibleMoves(Checker? checker)
+    private List<MoveInfo> GetPossibleMoves(Checker? checker)
     {
+
         if (checker == null) return new();
 
-        List<Cell> result = new();
+        List<MoveInfo> result = new();
 
-        List<Cell> possibleCells = new();
+        List<Cell> possibleMoveCells = new();
+        List<Cell> possibleJumpCells = new();
 
         if (checker.Direction != CheckerDirection.Both)
         {
+            //jump 
+            possibleJumpCells.AddCellsRange(new[]
+            {
+                new Cell(checker.Cell.Row + 2, checker.Cell.Col + 2),
+                new Cell(checker.Cell.Row + 2, checker.Cell.Col - 2),
+                new Cell(checker.Cell.Row - 2, checker.Cell.Col + 2),
+                new Cell(checker.Cell.Row - 2, checker.Cell.Col - 2),
+            });
 
+            foreach (var cell in possibleJumpCells)
+            {
+                if (GetChecker(cell) != null) continue;
+
+                var possibleJumpedChecker = GetChecker((checker.Cell.Row + cell.Row) / 2, (checker.Cell.Col + cell.Col) / 2);
+                if (possibleJumpedChecker != null && checker.IsWhite != possibleJumpedChecker.IsWhite)
+                {
+                    ToBeRemovedChecker = possibleJumpedChecker;
+                    result.Add(new(checker.Cell, cell, true));
+                }
+
+            }
+
+            if (result.Any()) return result;
+
+            //simple move
             int row = checker.Cell.Row + (checker.Direction == CheckerDirection.Down ? 1 : -1);
-            possibleCells.AddCellsRange(new[] { new Cell(row, checker.Cell.Col + 1), new Cell(row, checker.Cell.Col - 1) });
+            possibleMoveCells.AddCellsRange(new[] { new Cell(row, checker.Cell.Col + 1), new Cell(row, checker.Cell.Col - 1) });
 
-            foreach (var cell in possibleCells)
+            foreach (var cell in possibleMoveCells)
                 if (GetChecker(cell) == null)
-                    result.Add(cell);
+                    result.Add(new(checker.Cell, cell, false));
         }
+
 
         else
         {
             //TODO define possible moves for Both direction; (King checker)
         }
 
-        return result;
 
+
+        return result;
+    }
+
+    public void MoveActiveCheckerTo(Cell cell)
+    {
+        if (ActiveChecker == null) return;
+
+        MoveInfo? move = GetPossibleMoves(ActiveChecker).FirstOrDefault(x => x.From == ActiveChecker.Cell && x.To == cell);
+
+        if (move == null) return;
+
+        ActiveChecker.Cell = cell;
+
+        if (move.IsJump && ToBeRemovedChecker != null)
+        {
+            Checkers.Remove(ToBeRemovedChecker);
+            if (GetPossibleMoves(ActiveChecker).Any(x => x.IsJump)) return;
+        }
+
+        WhiteTurn = !WhiteTurn;
+        ActiveChecker = null;
     }
 
     private IEnumerable<Checker> GetEnabledCheckers()
     {
+
+        Checker[] checkersToJump = Checkers.Where(checker => GetPossibleMoves(checker).Any(x => x.IsJump)).ToArray();
+
         foreach (var cheker in Checkers)
         {
             if (!GetPossibleMoves(cheker).Any()) continue;
@@ -82,9 +134,17 @@ public class CheckersBoard
             if (cheker.IsWhite && !WhiteTurn ||
                 !cheker.IsWhite && WhiteTurn) continue;
 
-             yield return cheker;
+            if (checkersToJump.Any())
+            {
+                if (checkersToJump.Contains(cheker))
+                    yield return cheker;
+            }
+
+            else
+                yield return cheker;
         }
     }
+
 
     //public List<Cell> EvaluateSpotForMove(Checker checker)
     //{
