@@ -5,7 +5,7 @@ namespace CheckersDemo.Client.Extensions;
 
 public static class ListExtensions
 {
-    public static void AddCellsRange(this List<Cell> list, Cell[] cells)
+    public static void AddCellsRange(this List<Cell> list, IEnumerable<Cell> cells)
     {
         foreach (var cell in cells)
         {

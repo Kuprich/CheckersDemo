@@ -1,4 +1,5 @@
 ﻿using CheckersDemo.Client.Extensions;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace CheckersDemo.Client.Data;
 
@@ -45,6 +46,8 @@ public class CheckersBoard
                 if (checker != null)
                     Checkers.Add(checker);
             }
+
+        Checkers[18].Direction = CheckerDirection.Both;
     }
 
     private List<MoveInfo> GetPossibleMoves(Checker? checker)
@@ -57,9 +60,10 @@ public class CheckersBoard
         List<Cell> possibleMoveCells = new();
         List<Cell> possibleJumpCells = new();
 
+        //simple checker
         if (checker.Direction != CheckerDirection.Both)
         {
-            //jump 
+            //jump: 
             possibleJumpCells.AddCellsRange(new[]
             {
                 new Cell(checker.Cell.Row + 2, checker.Cell.Col + 2),
@@ -83,7 +87,7 @@ public class CheckersBoard
 
             if (result.Any()) return result;
 
-            //simple move
+            // move: 
             int row = checker.Cell.Row + (checker.Direction == CheckerDirection.Down ? 1 : -1);
             possibleMoveCells.AddCellsRange(new[] { new Cell(row, checker.Cell.Col + 1), new Cell(row, checker.Cell.Col - 1) });
 
@@ -96,6 +100,22 @@ public class CheckersBoard
         else
         {
             //TODO define possible moves for Both direction; (King checker)
+            //simple move: 
+
+            var cellLines = new Cell[][]
+            {
+                Enumerable.Range(1, 7).Select(i => new Cell(checker.Cell.Row - i, checker.Cell.Col - i)).ToArray(),
+                Enumerable.Range(1, 7).Select(i => new Cell(checker.Cell.Row - i, checker.Cell.Col + i)).ToArray(),
+                Enumerable.Range(1, 7).Select(i => new Cell(checker.Cell.Row + i, checker.Cell.Col - i)).ToArray(),
+                Enumerable.Range(1, 7).Select(i => new Cell(checker.Cell.Row + i, checker.Cell.Col + i)).ToArray(),
+            };
+
+            foreach (var cellLine in cellLines)
+                foreach (var cell in cellLine)
+                {
+                    if (GetChecker(cell) != null) break;
+                    result.Add(new(checker.Cell, cell, false));
+                }
         }
 
 
@@ -112,6 +132,12 @@ public class CheckersBoard
         if (move == null) return;
 
         ActiveChecker.Cell = cell;
+
+        if (cell.Row == 0 && ActiveChecker.IsWhite ||
+            cell.Row == 7 && !ActiveChecker.IsWhite)
+        {
+            ActiveChecker.Direction = CheckerDirection.Both;
+        }
 
         if (move.IsJump && ToBeRemovedChecker != null)
         {
