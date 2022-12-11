@@ -1,8 +1,7 @@
 ﻿$black-cell: #b5802d;
 $white-cell: #fff6bd;
 
-.board
-{
+.board {
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
@@ -34,7 +33,8 @@ $white-cell: #fff6bd;
         display: flex;
         justify-content: center;
         align-items: center;
-        &-active{
+
+        &-active {
             box-shadow: inset 0 0 0 3px green;
             cursor: pointer;
         }
@@ -99,4 +99,3 @@ $white-cell: #fff6bd;
         }
     }
 }
-

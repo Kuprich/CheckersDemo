@@ -8,6 +8,7 @@ public class Checker
         Direction = direction;
         IsWhite = isWhite;
     }
+    public Checker() { }
 
     public Cell Cell;
     public CheckerDirection Direction { get; set; }
