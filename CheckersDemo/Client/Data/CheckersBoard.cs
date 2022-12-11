@@ -50,6 +50,44 @@ public class CheckersBoard
 
         Checkers[15].Direction = CheckerDirection.Both;
     }
+    public void MoveActiveCheckerTo(Cell cell)
+    {
+        if (ActiveChecker == null) return;
+
+        MoveInfo? move = GetPossibleMoves(ActiveChecker).FirstOrDefault(x => x.From == ActiveChecker.Cell && x.To == cell);
+
+        if (move == null) return;
+
+        ActiveChecker.Cell = cell;
+
+        if (cell.Row == 0 && ActiveChecker.IsWhite ||
+            cell.Row == 7 && !ActiveChecker.IsWhite)
+        {
+            ActiveChecker.Direction = CheckerDirection.Both;
+        }
+
+        if (move.IsJump && _jumpedChecker != null)
+        {
+            JumpedCheckers.Add(_jumpedChecker);
+            if (GetPossibleMoves(ActiveChecker).Any(x => x.IsJump))
+            {
+                return;
+            }
+        }
+
+        //remove jumed checkers
+        if (JumpedCheckers != null && JumpedCheckers.Any())
+        {
+            foreach (var jumpedChecker in JumpedCheckers!)
+                Checkers.Remove(jumpedChecker);
+            JumpedCheckers.Clear();
+        }
+
+
+        WhiteTurn = !WhiteTurn;
+        ActiveChecker = null;
+        UpdateEnabledCheckers();
+    }
 
     private List<MoveInfo> GetPossibleMoves(Checker? checker)
     {
@@ -96,11 +134,9 @@ public class CheckersBoard
                     result.Add(new(checker.Cell, cell, false));
         }
 
-
+        //King checker (both checker direction)
         else
         {
-            //TODO define possible moves for Both direction; (King checker)
-
 
             var cellLines = new List<List<Cell>>
             {
@@ -112,28 +148,43 @@ public class CheckersBoard
 
             //jump: 
             foreach (var cellLine in cellLines)
-                for (int i = 0; i < cellLine.Count; i++)
+            {
+                if (cellLine.Count <= 1) continue;
+
+                for (int i = 0; i < cellLine.Count - 1; i++)
                 {
-                    if (cellLine.Count <= 1) break;
                     var possibleJumpedChecker = GetChecker(cellLine[i]);
 
                     if (possibleJumpedChecker == null) continue;
-                    if (possibleJumpedChecker != null && possibleJumpedChecker.IsWhite == checker.IsWhite) break;
+                    if (possibleJumpedChecker.IsWhite == checker.IsWhite) break;
 
-                    if (possibleJumpedChecker != null 
-                        && possibleJumpedChecker.IsWhite != checker.IsWhite 
-                        && !JumpedCheckers.Contains(possibleJumpedChecker))
+                    if (JumpedCheckers.Contains(possibleJumpedChecker)) continue;
+
+                    if (GetChecker(cellLine[i + 1]) != null) break;
+
+                    _jumpedChecker = possibleJumpedChecker;
+
+                    if (i + 1 >= cellLine.Count - 1)
+                        result.Add(new(checker.Cell, cellLine[i + 1], true));
+                    else
                     {
                         for (int j = i + 1; j < cellLine.Count; j++)
                         {
-                            if (GetChecker(cellLine[j]) != null) break;
+                            bool val = CheckJumpPossibilityForKingChecker(cellLine[j]);
 
-                            _jumpedChecker = possibleJumpedChecker;
-                            result.Add(new(checker.Cell, cellLine[j], true));
+                            if (CheckJumpPossibilityForKingChecker(cellLine[j]))
+                                result.Add(new(checker.Cell, cellLine[j], true));
                         }
+                           
+
+                        if (!result.Any())
+                            for (int j = i + 1; j < cellLine.Count; j++)
+                                result.Add(new(checker.Cell, cellLine[j], true));
                     }
-                    
+
+                    break;
                 }
+            }
 
             if (result.Any()) return result;
 
@@ -147,50 +198,45 @@ public class CheckersBoard
 
         }
 
-
-
         return result;
     }
 
-    public void MoveActiveCheckerTo(Cell cell)
+    private bool CheckJumpPossibilityForKingChecker(Cell cell)
     {
-        if (ActiveChecker == null) return;
 
-        MoveInfo? move = GetPossibleMoves(ActiveChecker).FirstOrDefault(x => x.From == ActiveChecker.Cell && x.To == cell);
-
-        if (move == null) return;
-
-        ActiveChecker.Cell = cell;
-
-        if (cell.Row == 0 && ActiveChecker.IsWhite ||
-            cell.Row == 7 && !ActiveChecker.IsWhite)
-        {
-            ActiveChecker.Direction = CheckerDirection.Both;
-        }
-
-        if (move.IsJump && _jumpedChecker != null)
-        {
-            JumpedCheckers.Add(_jumpedChecker);
-            if (GetPossibleMoves(ActiveChecker).Any(x => x.IsJump))
+        var cellLines = new List<List<Cell>>
             {
-                return;
+                new List<Cell>().AddCellsRange(Enumerable.Range(1, 7).Select(i => new Cell(cell.Row - i, cell.Col - i)).ToArray()),
+                new List<Cell>().AddCellsRange(Enumerable.Range(1, 7).Select(i => new Cell(cell.Row - i, cell.Col + i)).ToArray()),
+                new List<Cell>().AddCellsRange(Enumerable.Range(1, 7).Select(i => new Cell(cell.Row + i, cell.Col - i)).ToArray()),
+                new List<Cell>().AddCellsRange(Enumerable.Range(1, 7).Select(i => new Cell(cell.Row + i, cell.Col + i)).ToArray())
+            };
+
+        //jump:
+        foreach (var cellLine in cellLines)
+        {
+            if (cellLine.Count <= 1) continue;
+
+            if (_jumpedChecker != null && cellLine.Contains(_jumpedChecker.Cell)) continue;
+
+            for (int i = 0; i < cellLine.Count - 1; i++)
+            {
+                var possibleJumpedChecker = GetChecker(cellLine[i]);
+
+                if (possibleJumpedChecker == null) continue;
+                if (possibleJumpedChecker.IsWhite == WhiteTurn) break;
+
+                if (JumpedCheckers.Contains(possibleJumpedChecker)) continue;
+
+                if (GetChecker(cellLine[i + 1]) != null) break;
+
+                _jumpedChecker = possibleJumpedChecker;
+
+                return true;
             }
         }
-
-        //remove jumed checkers
-        if (JumpedCheckers != null && JumpedCheckers.Any())
-        {
-            foreach (var jumpedChecker in JumpedCheckers!)
-                Checkers.Remove(jumpedChecker);
-            JumpedCheckers.Clear();
-        }
-
-
-        WhiteTurn = !WhiteTurn;
-        ActiveChecker = null;
-        UpdateEnabledCheckers();
+        return false;
     }
-
     private void UpdateEnabledCheckers()
     {
         EnabledCheckers.Clear();
@@ -214,4 +260,6 @@ public class CheckersBoard
                 EnabledCheckers.Add(cheker);
         }
     }
+
+
 }
