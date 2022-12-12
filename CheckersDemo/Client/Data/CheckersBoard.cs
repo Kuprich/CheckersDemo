@@ -5,13 +5,12 @@ namespace CheckersDemo.Client.Data;
 public class CheckersBoard
 {
     public List<Checker> Checkers { get; set; } = new();
-    public Checker? BeingAttackedChecker { get; set; }
+
     public List<Cell> CellsPossible = new();
     public Checker? ActiveChecker { get; set; }
     public Cell[]? ActiveCells => GetPossibleMoves(ActiveChecker).Select(x => x.To).Distinct().ToArray();
     public Checker? AttaсkingChecker { get; set; }
     public List<Checker> JumpedCheckers { get; private set; } = new();
-    //private Checker? _jumpedChecker;
     public bool WhiteTurn { get; set; } = true;
     public List<Checker> EnabledCheckers { get; private set; } = new();
     public Checker? GetChecker(int row, int col) => Checkers.FirstOrDefault(x => x.Cell.Equals(row, col));
@@ -19,12 +18,15 @@ public class CheckersBoard
 
     public CheckersBoard()
     {
-        InitializeBoard();
-        UpdateEnabledCheckers();
+        CreateNewGame();
+        //InitializeBoard();
+        //UpdateEnabledCheckers();
     }
 
     public void InitializeBoard()
     {
+        Checkers.Clear();
+
         for (int row = 0; row < 8; row++)
             for (int col = (row + 1) % 2; col < 8; col += 2)
             {
@@ -38,8 +40,6 @@ public class CheckersBoard
                 if (checker != null)
                     Checkers.Add(checker);
             }
-
-        Checkers[15].Direction = CheckerDirection.Both;
     }
     public void MoveActiveCheckerTo(Cell cell)
     {
@@ -67,18 +67,42 @@ public class CheckersBoard
         }
 
 
-        //remove jumed checkers
+        RemoveJumpedCheckers();
+
+        WhiteTurn = !WhiteTurn;
+        ActiveChecker = null;
+
+        if (GameIsEnd())
+        {
+            CreateNewGame();
+        }
+
+        UpdateEnabledCheckers();
+    }
+
+    private void RemoveJumpedCheckers()
+    {
         if (JumpedCheckers != null && JumpedCheckers.Any())
         {
             foreach (var jumpedChecker in JumpedCheckers!)
                 Checkers.Remove(jumpedChecker);
             JumpedCheckers.Clear();
         }
-
-
-        WhiteTurn = !WhiteTurn;
-        ActiveChecker = null;
+    }
+    private void CreateNewGame()
+    {
+        InitializeBoard();
         UpdateEnabledCheckers();
+        WhiteTurn = true;
+    }
+
+    private bool GameIsEnd()
+    {
+        if (!Checkers.Any(x => x.IsWhite) || !Checkers.Any(x => !x.IsWhite))
+        {
+            return true;
+        }
+        return false;
     }
     private List<MoveInfo> GetPossibleMoves(Checker? checker)
     {
