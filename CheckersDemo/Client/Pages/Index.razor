@@ -1,3 +1,39 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.SignalR.Client;
 
-<CheckersBoardComponent />
+@code {
+    HubConnection hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:44314/connect")
+            .Build();
+
+    bool inGame = false;
+
+    async Task CreateGame()
+    {
+        await hubConnection.StartAsync();
+        string tableId = Guid.NewGuid().ToString();
+        await hubConnection.SendAsync("JoinTable", tableId);
+        inGame = true;
+    }
+
+    List<string> tables = new();
+}
+
+
+@if (inGame)
+{
+    <CheckersBoardComponent />
+}
+else
+{
+    <button @onclick="CreateGame">Create Game</button>
+
+    foreach (var table in tables)
+    {
+        <button @onclick="() => JoinGame(table)" >Join Game</button>
+    }
+}
+
+
+
+

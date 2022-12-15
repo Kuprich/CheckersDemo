@@ -1,11 +1,13 @@
-using Microsoft.AspNetCore.ResponseCompression;
+using CheckersDemo.Server.Data;
+using CheckersDemo.Server.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<TableManager>();
 
 var app = builder.Build();
 
@@ -31,6 +33,7 @@ app.UseRouting();
 
 app.MapRazorPages();
 app.MapControllers();
+app.MapHub<MultiplayerHub>("/connect");
 app.MapFallbackToFile("index.html");
 
 app.Run();
