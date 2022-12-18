@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckersDemo.Server", "CheckersDemo\Server\CheckersDemo.Server.csproj", "{F7C7C3EE-E68F-4325-B9B6-F0B393309586}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckersDemo.Server", "CheckersDemo\Server\CheckersDemo.Server.csproj", "{F7C7C3EE-E68F-4325-B9B6-F0B393309586}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckersDemo.Client", "CheckersDemo\Client\CheckersDemo.Client.csproj", "{9EAC60A7-0F06-41D3-AC1B-3F4887928D4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckersDemo.Client", "CheckersDemo\Client\CheckersDemo.Client.csproj", "{9EAC60A7-0F06-41D3-AC1B-3F4887928D4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckersDemo.Shared", "CheckersDemo\Shared\CheckersDemo.Shared.csproj", "{21C7E135-6945-4F3F-A9F4-27B9BF757163}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckersDemo.Shared", "CheckersDemo\Shared\CheckersDemo.Shared.csproj", "{21C7E135-6945-4F3F-A9F4-27B9BF757163}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CheckersDemo.Server.Data;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CheckersDemo.Server.Controllers;
 
@@ -6,14 +7,16 @@ namespace CheckersDemo.Server.Controllers;
 [Route("[controller]")]
 public class CheckersController : ControllerBase
 {
-    public CheckersController()
-    {
+    private readonly TableManager _tableManager;
 
+    public CheckersController(TableManager tableManager)
+    {
+        _tableManager = tableManager;
     }
 
     [HttpGet("GetTables")]
     public IEnumerable<string> GetTables()
     {
-
+        return  _tableManager.GetTables();
     }
 }

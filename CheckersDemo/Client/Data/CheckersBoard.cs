@@ -18,7 +18,7 @@ public class CheckersBoard
 
     public CheckersBoard()
     {
-        CreateNewGame();
+        //CreateNewGame();
         //InitializeBoard();
         //UpdateEnabledCheckers();
     }
@@ -89,7 +89,7 @@ public class CheckersBoard
             JumpedCheckers.Clear();
         }
     }
-    private void CreateNewGame()
+    public void CreateNewGame()
     {
         InitializeBoard();
         UpdateEnabledCheckers();
@@ -104,6 +104,7 @@ public class CheckersBoard
         }
         return false;
     }
+
     private List<MoveInfo> GetPossibleMoves(Checker? checker)
     {
         if (checker == null) return new();

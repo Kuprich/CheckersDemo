@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using CheckersDemo.Shared
 @using Microsoft.AspNetCore.SignalR.Client;
 
 @code {
@@ -8,21 +9,40 @@
 
     bool inGame = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshTables();
+    }
+
+    async Task RefreshTables()
+    {
+        HttpClient httpClient = new();
+        tables = await httpClient.GetFromJsonAsync<List<string>>("https://localhost:44314/Checkers/GetTables") ?? new();
+    }
+    string tableId = "";
     async Task CreateGame()
     {
         await hubConnection.StartAsync();
-        string tableId = Guid.NewGuid().ToString();
-        await hubConnection.SendAsync("JoinTable", tableId);
+        tableId = Guid.NewGuid().ToString();
+        await hubConnection.SendAsync(HubMethodNames.JoinTale, tableId);
         inGame = true;
     }
 
     List<string> tables = new();
+
+    async Task JoinGame(string tableId)
+    {
+        this.tableId = tableId;
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync(HubMethodNames.JoinTale, tableId);
+        inGame = true;
+    }
 }
 
 
 @if (inGame)
 {
-    <CheckersBoardComponent />
+    <CheckersBoardComponent HubConnection="hubConnection" TableId="@tableId" />
 }
 else
 {
@@ -30,7 +50,9 @@ else
 
     foreach (var table in tables)
     {
-        <button @onclick="() => JoinGame(table)" >Join Game</button>
+        <div>
+            <button @onclick="() => JoinGame(table)">Join Game @table</button>
+        </div>
     }
 }
 

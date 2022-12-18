@@ -1,0 +1,81 @@
+﻿@using CheckersDemo.Shared
+
+<div class="board">
+
+    @for (int i = 0; i < 8; i++)
+    {
+        int row = i;
+        <div class="board__row">
+            @for (var j = 0; j < 8; j++)
+            {
+                int col = j;
+
+                var cell = new Cell(row, col);
+
+                bool cellIsActive = _board.ActiveCells?.Contains(cell) ?? false;
+
+                <div @onclick="() => ActiveCellClicked(cell)" class="board__cell @(cellIsActive ? "board__cell-active": "")">
+                    @{
+                        var checker = _board.GetChecker(cell);
+
+                        if (checker != null)
+                        {
+                                    <CheckerComponent Checker="checker"
+                              IsEnabled="_board.EnabledCheckers.Contains(checker)"
+                              IsJumped="_board.JumpedCheckers.Contains(checker)"
+                              CheckerClicked="CheckerClicked" />
+                        }
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+@code {
+    [Parameter]
+    public HubConnection HubConnection { get; set; } = null!;
+
+    [Parameter]
+    public string TableId { get; set; } = null!;
+
+    CheckersBoard _board = new();
+
+    protected override Task OnInitializedAsync()
+    {
+        HubConnection.On("JoinTableInvoked", HubJoin);
+        //HubConnection.On<Checker, Cell>("MoveInvoked", HubMove);
+
+        return base.OnInitializedAsync();
+
+    }
+
+    private void CheckerClicked(Checker checker)
+    {
+        if (_board.EnabledCheckers.Contains(checker))
+        {
+            _board.ActiveChecker = checker;
+        }
+    }
+
+    private void ActiveCellClicked(Cell cell)
+    {
+        Console.WriteLine("active cell clicked");
+        if (_board.ActiveCells?.Contains(cell) != false)
+        {
+            _board.MoveActiveCheckerTo(cell);
+
+            HubConnection.SendAsync(HubMethodNames.Move, TableId.ToString(), _board.ActiveChecker, cell);
+        }
+    }
+
+    private void HubMove(Checker checker, Cell cell){
+
+    }
+
+    private void HubJoin(){
+        _board.CreateNewGame();
+        StateHasChanged();
+    }
+}
