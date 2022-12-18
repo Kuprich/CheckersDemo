@@ -20,11 +20,12 @@
         tables = await httpClient.GetFromJsonAsync<List<string>>("https://localhost:44314/Checkers/GetTables") ?? new();
     }
     string tableId = "";
+
     async Task CreateGame()
     {
         await hubConnection.StartAsync();
         tableId = Guid.NewGuid().ToString();
-        await hubConnection.SendAsync(HubMethodNames.JoinTale, tableId);
+        await hubConnection.SendAsync(HubMethodNames.CreateTable, tableId);
         inGame = true;
     }
 
@@ -34,7 +35,7 @@
     {
         this.tableId = tableId;
         await hubConnection.StartAsync();
-        await hubConnection.SendAsync(HubMethodNames.JoinTale, tableId);
+        await hubConnection.SendAsync(HubMethodNames.JoinTable, tableId);
         inGame = true;
     }
 }

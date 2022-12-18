@@ -13,24 +13,19 @@ public class MultiplayerHub : Hub
     {
         _tableManager = tableManager;
     }
-    public async Task JoinTable(string tableId)
-    {
-        if (_tableManager.Tables.ContainsKey(tableId))
-        {
-            if (_tableManager.Tables[tableId] < 2)
-            {
-                await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
-                await Clients.Groups(tableId).SendAsync("JoinTableInvoked");
-                //await Clients.GroupExcept(tableId, Context.ConnectionId).SendAsync("JoinTableInvoked");
-                _tableManager.Tables[tableId]++;
-            }
-        }
 
-        else
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
-            _tableManager.Tables.Add(tableId, 1);
-        }
+    public async Task CreateTable(Guid tableId)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, tableId.ToString());
+        _tableManager.Tables.Add(tableId, new Table(tableId.ToString()));
+    }
+    public async Task JoinTable(Guid tableId)
+    {
+        if (!_tableManager.Tables.ContainsKey(tableId) || _tableManager.Tables[tableId].State == TableState.Full) return;
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, tableId.ToString());
+        await Clients.Groups(tableId.ToString()).SendAsync("JoinTableInvoked");
+        _tableManager.Tables[tableId].State = TableState.Full;
     }
 
     public async Task Move(string tableId, Cell cell)
