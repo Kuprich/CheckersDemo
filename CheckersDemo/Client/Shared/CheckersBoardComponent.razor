@@ -20,7 +20,7 @@
 
                         if (checker != null)
                         {
-                                    <CheckerComponent Checker="checker"
+                            <CheckerComponent Checker="checker"
                               IsEnabled="_board.EnabledCheckers.Contains(checker)"
                               IsJumped="_board.JumpedCheckers.Contains(checker)"
                               CheckerClicked="CheckerClicked" />
@@ -45,7 +45,7 @@
     protected override Task OnInitializedAsync()
     {
         HubConnection.On("JoinTableInvoked", HubJoin);
-        //HubConnection.On<Checker, Cell>("MoveInvoked", HubMove);
+        HubConnection.On<Cell>("MoveInvoked", HubMove);
 
         return base.OnInitializedAsync();
 
@@ -61,20 +61,21 @@
 
     private void ActiveCellClicked(Cell cell)
     {
-        Console.WriteLine("active cell clicked");
         if (_board.ActiveCells?.Contains(cell) != false)
         {
-            _board.MoveActiveCheckerTo(cell);
-
-            HubConnection.SendAsync(HubMethodNames.Move, TableId.ToString(), _board.ActiveChecker, cell);
+            HubConnection.SendAsync(HubMethodNames.Move, TableId.ToString(), cell);
+            //_board.MoveActiveCheckerTo(cell);
         }
     }
 
-    private void HubMove(Checker checker, Cell cell){
-
+    private void HubMove(Cell cell)
+    {
+        _board.MoveActiveCheckerTo(cell);
+        StateHasChanged();
     }
 
-    private void HubJoin(){
+    private void HubJoin()
+    {
         _board.CreateNewGame();
         StateHasChanged();
     }

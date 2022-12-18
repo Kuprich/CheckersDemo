@@ -33,9 +33,8 @@ public class MultiplayerHub : Hub
         }
     }
 
-    public async Task Move(string tableId, Checker checker, Cell cell)
+    public async Task Move(string tableId, Cell cell)
     {
-        await Clients.GroupExcept(tableId, Context.ConnectionId)
-            .SendAsync("MoveInvoked", checker, cell);
+        await Clients.Groups(tableId).SendAsync("MoveInvoked", cell);
     }
 }
