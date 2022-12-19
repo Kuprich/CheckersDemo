@@ -23,7 +23,7 @@ public class CheckersBoard
         //UpdateEnabledCheckers();
     }
 
-    public void InitializeBoard()
+    private void InitializeBoard()
     {
         Checkers.Clear();
 
@@ -41,26 +41,28 @@ public class CheckersBoard
                     Checkers.Add(checker);
             }
     }
-    public void MoveActiveCheckerTo(Cell cell)
+    public void MoveChecker(Cell cellFrom, Cell cellTo)
     {
-        if (ActiveChecker == null) return;
 
-        MoveInfo? move = GetPossibleMoves(ActiveChecker).FirstOrDefault(x => x.From == ActiveChecker.Cell && x.To == cell);
+        var checker = GetChecker(cellFrom);
+        if (checker == null) return;
+
+        MoveInfo? move = GetPossibleMoves(checker).FirstOrDefault(x => x.From == checker.Cell && x.To == cellTo);
 
         if (move == null) return;
 
-        ActiveChecker.Cell = cell;
+        checker.Cell = cellTo;
 
-        if (cell.Row == 0 && ActiveChecker.IsWhite ||
-            cell.Row == 7 && !ActiveChecker.IsWhite)
+        if (cellTo.Row == 0 && checker.IsWhite ||
+            cellTo.Row == 7 && !checker.IsWhite)
         {
-            ActiveChecker.Direction = CheckerDirection.Both;
+            checker.Direction = CheckerDirection.Both;
         }
 
         if (move is JumpedMoveInfo jumpedMove)
         {
             JumpedCheckers.Add(jumpedMove.JumpedChecker);
-            if (GetPossibleMoves(ActiveChecker).Any(x => x is JumpedMoveInfo))
+            if (GetPossibleMoves(checker).Any(x => x is JumpedMoveInfo))
             {
                 return;
             }

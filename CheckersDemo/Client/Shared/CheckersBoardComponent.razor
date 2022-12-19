@@ -45,7 +45,7 @@
     protected override Task OnInitializedAsync()
     {
         HubConnection.On("JoinTableInvoked", HubJoin);
-        HubConnection.On<Cell>("MoveInvoked", HubMove);
+        HubConnection.On<Cell, Cell>("MoveInvoked", HubMove);
 
         return base.OnInitializedAsync();
 
@@ -63,14 +63,13 @@
     {
         if (_board.ActiveCells?.Contains(cell) != false)
         {
-            HubConnection.SendAsync(HubMethodNames.Move, TableId.ToString(), cell);
-            //_board.MoveActiveCheckerTo(cell);
+            HubConnection.SendAsync(HubMethodNames.Move, TableId.ToString(), _board.ActiveChecker?.Cell, cell);
         }
     }
 
-    private void HubMove(Cell cell)
+    private void HubMove(Cell cellFrom, Cell cellTo)
     {
-        _board.MoveActiveCheckerTo(cell);
+        _board.MoveChecker(cellFrom, cellTo);
         StateHasChanged();
     }
 

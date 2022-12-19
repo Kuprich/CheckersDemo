@@ -28,8 +28,8 @@ public class MultiplayerHub : Hub
         _tableManager.Tables[tableId].State = TableState.Full;
     }
 
-    public async Task Move(string tableId, Cell cell)
+    public async Task Move(string tableId, Cell cellFrom, Cell cellTo)
     {
-        await Clients.Groups(tableId).SendAsync("MoveInvoked", cell);
+        await Clients.Groups(tableId).SendAsync("MoveInvoked", cellFrom, cellTo);
     }
 }
