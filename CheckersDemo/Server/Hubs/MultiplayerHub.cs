@@ -1,5 +1,6 @@
 ﻿using CheckersDemo.Client.Data;
 using CheckersDemo.Server.Data;
+using CheckersDemo.Shared;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -24,12 +25,12 @@ public class MultiplayerHub : Hub
         if (!_tableManager.Tables.ContainsKey(tableId) || _tableManager.Tables[tableId].State == TableState.Full) return;
 
         await Groups.AddToGroupAsync(Context.ConnectionId, tableId.ToString());
-        await Clients.Groups(tableId.ToString()).SendAsync("JoinTableInvoked");
+        await Clients.Groups(tableId.ToString()).SendAsync(HubMethodNames.JoinTable.On());
         _tableManager.Tables[tableId].State = TableState.Full;
     }
 
     public async Task Move(string tableId, Cell cellFrom, Cell cellTo)
     {
-        await Clients.Groups(tableId).SendAsync("MoveInvoked", cellFrom, cellTo);
+        await Clients.Groups(tableId).SendAsync(HubMethodNames.Move.On(), cellFrom, cellTo);
     }
 }

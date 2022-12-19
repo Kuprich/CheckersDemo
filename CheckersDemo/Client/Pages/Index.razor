@@ -8,6 +8,7 @@
             .Build();
 
     bool inGame = false;
+    bool isWhitePlayer = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -27,6 +28,7 @@
         tableId = Guid.NewGuid().ToString();
         await hubConnection.SendAsync(HubMethodNames.CreateTable, tableId);
         inGame = true;
+        isWhitePlayer = true;
     }
 
     List<string> tables = new();
@@ -37,13 +39,14 @@
         await hubConnection.StartAsync();
         await hubConnection.SendAsync(HubMethodNames.JoinTable, tableId);
         inGame = true;
+        isWhitePlayer = false;
     }
 }
 
 
 @if (inGame)
 {
-    <CheckersBoardComponent HubConnection="hubConnection" TableId="@tableId" />
+    <CheckersBoardComponent HubConnection="hubConnection" TableId="@tableId" IsWhitePlayer="isWhitePlayer" />
 }
 else
 {

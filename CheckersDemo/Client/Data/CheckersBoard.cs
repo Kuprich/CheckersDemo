@@ -4,14 +4,14 @@ namespace CheckersDemo.Client.Data;
 
 public class CheckersBoard
 {
-    public List<Checker> Checkers { get; set; } = new();
+    public List<Checker> Checkers { get; private set; } = new();
 
     public List<Cell> CellsPossible = new();
     public Checker? ActiveChecker { get; set; }
     public Cell[]? ActiveCells => GetPossibleMoves(ActiveChecker).Select(x => x.To).Distinct().ToArray();
-    public Checker? AttaсkingChecker { get; set; }
+    public Checker? AttaсkingChecker { get; private set; }
     public List<Checker> JumpedCheckers { get; private set; } = new();
-    public bool WhiteTurn { get; set; } = true;
+    public bool IsWhiteTurn { get; private set; } = true;
     public List<Checker> EnabledCheckers { get; private set; } = new();
     public Checker? GetChecker(int row, int col) => Checkers.FirstOrDefault(x => x.Cell.Equals(row, col));
     public Checker? GetChecker(Cell cell) => GetChecker(cell.Row, cell.Col);
@@ -71,7 +71,7 @@ public class CheckersBoard
 
         RemoveJumpedCheckers();
 
-        WhiteTurn = !WhiteTurn;
+        IsWhiteTurn = !IsWhiteTurn;
         ActiveChecker = null;
 
         if (GameIsEnd())
@@ -95,7 +95,7 @@ public class CheckersBoard
     {
         InitializeBoard();
         UpdateEnabledCheckers();
-        WhiteTurn = true;
+        IsWhiteTurn = true;
     }
 
     private bool GameIsEnd()
@@ -243,7 +243,7 @@ public class CheckersBoard
                 var possibleJumpedChecker = GetChecker(cellLine[i]);
 
                 if (possibleJumpedChecker == null) continue;
-                if (possibleJumpedChecker.IsWhite == WhiteTurn) break;
+                if (possibleJumpedChecker.IsWhite == IsWhiteTurn) break;
 
                 if (JumpedCheckers.Contains(possibleJumpedChecker)) continue;
 
@@ -258,14 +258,14 @@ public class CheckersBoard
     {
         EnabledCheckers.Clear();
 
-        Checker[] checkersToJump = Checkers.Where(checker => GetPossibleMoves(checker).Any(x => x is JumpedMoveInfo && checker.IsWhite == WhiteTurn)).ToArray();
+        Checker[] checkersToJump = Checkers.Where(checker => GetPossibleMoves(checker).Any(x => x is JumpedMoveInfo && checker.IsWhite == IsWhiteTurn)).ToArray();
 
         foreach (var cheker in Checkers)
         {
             if (!GetPossibleMoves(cheker).Any()) continue;
 
-            if (cheker.IsWhite && !WhiteTurn ||
-                !cheker.IsWhite && WhiteTurn) continue;
+            if (cheker.IsWhite && !IsWhiteTurn ||
+                !cheker.IsWhite && IsWhiteTurn) continue;
 
             if (checkersToJump.Any())
             {

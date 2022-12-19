@@ -21,7 +21,7 @@
                         if (checker != null)
                         {
                             <CheckerComponent Checker="checker"
-                              IsEnabled="_board.EnabledCheckers.Contains(checker)"
+                              IsEnabled="_board.EnabledCheckers.Contains(checker) && IsWhitePlayer == _board.IsWhiteTurn"
                               IsJumped="_board.JumpedCheckers.Contains(checker)"
                               CheckerClicked="CheckerClicked" />
                         }
@@ -40,12 +40,15 @@
     [Parameter]
     public string TableId { get; set; } = null!;
 
+    [Parameter]
+    public bool IsWhitePlayer { get; set; }
+
     CheckersBoard _board = new();
 
     protected override Task OnInitializedAsync()
     {
-        HubConnection.On("JoinTableInvoked", HubJoin);
-        HubConnection.On<Cell, Cell>("MoveInvoked", HubMove);
+        HubConnection.On(HubMethodNames.JoinTable.On(), HubJoin);
+        HubConnection.On<Cell, Cell>(HubMethodNames.Move.On(), HubMove);
 
         return base.OnInitializedAsync();
 
@@ -53,6 +56,13 @@
 
     private void CheckerClicked(Checker checker)
     {
+
+        //if (IsWhitePlayer != _board.IsWhiteTurn){
+        //    Console.WriteLine(IsWhitePlayer);
+        //    Console.WriteLine(_board.IsWhiteTurn);
+        //    return;
+        //}
+
         if (_board.EnabledCheckers.Contains(checker))
         {
             _board.ActiveChecker = checker;
