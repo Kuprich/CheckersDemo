@@ -16,13 +16,6 @@ public class CheckersBoard
     public Checker? GetChecker(int row, int col) => Checkers.FirstOrDefault(x => x.Cell.Equals(row, col));
     public Checker? GetChecker(Cell cell) => GetChecker(cell.Row, cell.Col);
 
-    public CheckersBoard()
-    {
-        //CreateNewGame();
-        //InitializeBoard();
-        //UpdateEnabledCheckers();
-    }
-
     private void InitializeBoard()
     {
         Checkers.Clear();
@@ -41,47 +34,6 @@ public class CheckersBoard
                     Checkers.Add(checker);
             }
     }
-    public void MoveChecker(Cell cellFrom, Cell cellTo)
-    {
-
-        var checker = GetChecker(cellFrom);
-        if (checker == null) return;
-
-        MoveInfo? move = GetPossibleMoves(checker).FirstOrDefault(x => x.From == checker.Cell && x.To == cellTo);
-
-        if (move == null) return;
-
-        checker.Cell = cellTo;
-
-        if (cellTo.Row == 0 && checker.IsWhite ||
-            cellTo.Row == 7 && !checker.IsWhite)
-        {
-            checker.Direction = CheckerDirection.Both;
-        }
-
-        if (move is JumpedMoveInfo jumpedMove)
-        {
-            JumpedCheckers.Add(jumpedMove.JumpedChecker);
-            if (GetPossibleMoves(checker).Any(x => x is JumpedMoveInfo))
-            {
-                return;
-            }
-        }
-
-
-        RemoveJumpedCheckers();
-
-        IsWhiteTurn = !IsWhiteTurn;
-        ActiveChecker = null;
-
-        if (GameIsEnd())
-        {
-            CreateNewGame();
-        }
-
-        UpdateEnabledCheckers();
-    }
-
     private void RemoveJumpedCheckers()
     {
         if (JumpedCheckers != null && JumpedCheckers.Any())
@@ -91,13 +43,6 @@ public class CheckersBoard
             JumpedCheckers.Clear();
         }
     }
-    public void CreateNewGame()
-    {
-        InitializeBoard();
-        UpdateEnabledCheckers();
-        IsWhiteTurn = true;
-    }
-
     private bool GameIsEnd()
     {
         if (!Checkers.Any(x => x.IsWhite) || !Checkers.Any(x => !x.IsWhite))
@@ -106,7 +51,6 @@ public class CheckersBoard
         }
         return false;
     }
-
     private List<MoveInfo> GetPossibleMoves(Checker? checker)
     {
         if (checker == null) return new();
@@ -278,5 +222,51 @@ public class CheckersBoard
         }
     }
 
+    public void MoveChecker(Cell cellFrom, Cell cellTo)
+    {
+
+        var checker = GetChecker(cellFrom);
+        if (checker == null) return;
+
+        MoveInfo? move = GetPossibleMoves(checker).FirstOrDefault(x => x.From == checker.Cell && x.To == cellTo);
+
+        if (move == null) return;
+
+        checker.Cell = cellTo;
+
+        if (cellTo.Row == 0 && checker.IsWhite ||
+            cellTo.Row == 7 && !checker.IsWhite)
+        {
+            checker.Direction = CheckerDirection.Both;
+        }
+
+        if (move is JumpedMoveInfo jumpedMove)
+        {
+            JumpedCheckers.Add(jumpedMove.JumpedChecker);
+            if (GetPossibleMoves(checker).Any(x => x is JumpedMoveInfo))
+            {
+                return;
+            }
+        }
+
+
+        RemoveJumpedCheckers();
+
+        IsWhiteTurn = !IsWhiteTurn;
+        ActiveChecker = null;
+
+        if (GameIsEnd())
+        {
+            CreateNewGame();
+        }
+
+        UpdateEnabledCheckers();
+    }
+    public void CreateNewGame()
+    {
+        InitializeBoard();
+        UpdateEnabledCheckers();
+        IsWhiteTurn = true;
+    }
 
 }

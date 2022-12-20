@@ -1,35 +1,39 @@
 ﻿@using CheckersDemo.Shared
 
-<div class="board">
+<div class="board_wrapper">
 
-    @for (int i = 0; i < 8; i++)
-    {
-        int row = i;
-        <div class="board__row">
-            @for (var j = 0; j < 8; j++)
-            {
-                int col = j;
+    <div class="board @(!BoardInfo.IsWhitePlayer ? "flex-column-reverse" : "")">
 
-                var cell = new Cell(row, col);
+        @for (int i = 0; i < 8; i++)
+        {
+            int row = i;
+            <div class="board__row @(!BoardInfo.IsWhitePlayer ? "flex-row-reverse" : "")">
+                @for (var j = 0; j < 8; j++)
+                {
+                    int col = j;
 
-                bool cellIsActive = _board.ActiveCells?.Contains(cell) ?? false;
+                    var cell = new Cell(row, col);
 
-                <div @onclick="() => ActiveCellClicked(cell)" class="board__cell @(cellIsActive ? "board__cell-active": "")">
-                    @{
-                        var checker = _board.GetChecker(cell);
+                    bool cellIsActive = _board.ActiveCells?.Contains(cell) ?? false;
 
-                        if (checker != null)
-                        {
-                            <CheckerComponent Checker="checker"
-                              IsEnabled="_board.EnabledCheckers.Contains(checker) && IsWhitePlayer == _board.IsWhiteTurn"
-                              IsJumped="_board.JumpedCheckers.Contains(checker)"
-                              CheckerClicked="CheckerClicked" />
+                    <div @onclick="() => ActiveCellClicked(cell)" class="board__cell @(cellIsActive ? "board__cell-active": "")">
+                        @{
+                            var checker = _board.GetChecker(cell);
+
+                            if (checker != null)
+                            {
+                                <CheckerComponent Checker="checker"
+                                  IsEnabled="_board.EnabledCheckers.Contains(checker) && BoardInfo.IsWhitePlayer == _board.IsWhiteTurn"
+                                  IsJumped="_board.JumpedCheckers.Contains(checker)"
+                                  CheckerClicked="CheckerClicked" />
+                            }
                         }
-                    }
-                </div>
-            }
-        </div>
-    }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
 </div>
 
 
@@ -38,10 +42,7 @@
     public HubConnection HubConnection { get; set; } = null!;
 
     [Parameter]
-    public string TableId { get; set; } = null!;
-
-    [Parameter]
-    public bool IsWhitePlayer { get; set; }
+    public BoardInfo BoardInfo { get; set; } = null!;
 
     CheckersBoard _board = new();
 
@@ -56,25 +57,17 @@
 
     private void CheckerClicked(Checker checker)
     {
-
-        //if (IsWhitePlayer != _board.IsWhiteTurn){
-        //    Console.WriteLine(IsWhitePlayer);
-        //    Console.WriteLine(_board.IsWhiteTurn);
-        //    return;
-        //}
+        if (BoardInfo.IsWhitePlayer != _board.IsWhiteTurn) return;
 
         if (_board.EnabledCheckers.Contains(checker))
-        {
             _board.ActiveChecker = checker;
-        }
+
     }
 
     private void ActiveCellClicked(Cell cell)
     {
         if (_board.ActiveCells?.Contains(cell) != false)
-        {
-            HubConnection.SendAsync(HubMethodNames.Move, TableId.ToString(), _board.ActiveChecker?.Cell, cell);
-        }
+            HubConnection.SendAsync(HubMethodNames.Move, BoardInfo.Id, _board.ActiveChecker?.Cell, cell);
     }
 
     private void HubMove(Cell cellFrom, Cell cellTo)

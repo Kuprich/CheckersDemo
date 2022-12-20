@@ -1,52 +1,45 @@
 ﻿@page "/"
+@using CheckersDemo.Client.Managers
 @using CheckersDemo.Shared
 @using Microsoft.AspNetCore.SignalR.Client;
 
-@code {
-    HubConnection hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:44314/connect")
-            .Build();
+@inject HubManager HubManager
 
-    bool inGame = false;
-    bool isWhitePlayer = true;
+@code {
+
+    private bool _inGame = false;
+    private List<string> tables = new();
+    private BoardInfo _tableInfo = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshTables();
+        tables = await HubManager.RefreshTables();
     }
-
-    async Task RefreshTables()
-    {
-        HttpClient httpClient = new();
-        tables = await httpClient.GetFromJsonAsync<List<string>>("https://localhost:44314/Checkers/GetTables") ?? new();
-    }
-    string tableId = "";
 
     async Task CreateGame()
     {
-        await hubConnection.StartAsync();
-        tableId = Guid.NewGuid().ToString();
-        await hubConnection.SendAsync(HubMethodNames.CreateTable, tableId);
-        inGame = true;
-        isWhitePlayer = true;
+        _tableInfo.Id = Guid.NewGuid().ToString();
+        await HubManager.CreateGame(_tableInfo.Id);
+        _tableInfo.IsWhitePlayer = true;
+
+        _inGame = true;
     }
 
-    List<string> tables = new();
-
-    async Task JoinGame(string tableId)
+    async Task JoinGame(string joinedTableId)
     {
-        this.tableId = tableId;
-        await hubConnection.StartAsync();
-        await hubConnection.SendAsync(HubMethodNames.JoinTable, tableId);
-        inGame = true;
-        isWhitePlayer = false;
+        await HubManager.JoinGame(joinedTableId);
+
+        _tableInfo.Id = joinedTableId;
+        _tableInfo.IsWhitePlayer = false;
+
+        _inGame = true;
     }
 }
 
 
-@if (inGame)
+@if (_inGame)
 {
-    <CheckersBoardComponent HubConnection="hubConnection" TableId="@tableId" IsWhitePlayer="isWhitePlayer" />
+    <CheckersBoardComponent HubConnection="HubManager.HubConnection" BoardInfo="_tableInfo" />
 }
 else
 {

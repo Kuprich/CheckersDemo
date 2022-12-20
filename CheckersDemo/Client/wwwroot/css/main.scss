@@ -1,6 +1,19 @@
 ﻿$black-cell: #b5802d;
 $white-cell: #fff6bd;
 
+.col-reverse{
+    flex-direction: column-reverse! important;
+}
+
+.row-reverse {
+    flex-direction: row-reverse! important;
+}
+
+
+.board_wrapper {
+    display: flex;
+    justify-content: center;
+}
 .board {
     display: flex;
     justify-content: flex-start;
@@ -21,6 +34,10 @@ $white-cell: #fff6bd;
             .board__cell:nth-child(2n) {
                 background: $black-cell;
             }
+        }
+
+        &_reverse {
+            flex-direction: row-reverse;
         }
     }
 
