@@ -1,25 +1,30 @@
 ﻿using CheckersDemo.Shared;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
-using System.Xml.Linq;
 
 namespace CheckersDemo.Client.Managers;
 
 public class HubManager
 {
+    private readonly HttpClient _httpClient;
     public HubConnection HubConnection { get; set; }
 
-    private HttpClient _httpClient = new();
-    public HubManager()
-	{
+    public HubManager(HttpClient httpClient)
+    {
+        if (httpClient.BaseAddress == null) throw new ApplicationException($"{nameof(httpClient.BaseAddress)} must not be null");
+
+        _httpClient = httpClient;
+
         HubConnection = new HubConnectionBuilder()
-           .WithUrl("https://localhost:44314/connect")
+           .WithUrl(new Uri(_httpClient.BaseAddress, "connect"))
            .Build();
+        _httpClient = httpClient;
     }
 
     public async Task<List<string>> RefreshTables()
     {
-        return await _httpClient.GetFromJsonAsync<List<string>>("https://localhost:44314/Checkers/GetTables") ?? new();
+        if (_httpClient.BaseAddress == null) return new List<string>();
+        return await _httpClient.GetFromJsonAsync<List<string>>(new Uri(_httpClient.BaseAddress, "checkers/getTables")) ?? new();
     }
     public async Task CreateGame(string tableId)
     {

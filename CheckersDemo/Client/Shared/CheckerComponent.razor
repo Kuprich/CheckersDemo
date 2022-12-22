@@ -1,11 +1,15 @@
 ﻿@if (Checker != null)
 {
-    <div @onclick="() => OnCheckerClicked(Checker)" class="checker checker-@(Checker.IsWhite ? "white" : "black" ) @(IsEnabled ? "checker-enabled": "") @(Checker.Direction == CheckerDirection.Both ? "checker-king" : "")">
-        @if (IsJumped)
-        {
-            <span>J</span>
-        }
+    <div class="checker_container">
+        <div @onclick="() => OnCheckerClicked(Checker)" class="checker checker-@(Checker.IsWhite ? "white" : "black" ) @(IsEnabled ? "checker-enabled": "") @(IsActive ? "checker-active": "") @(Checker.Direction == CheckerDirection.Both ? "checker-king" : "")">
+
+            @if (IsJumped)
+            {
+                <span>J</span>
+            }
+        </div>
     </div>
+
 }
 
 
@@ -18,6 +22,9 @@
 
     [Parameter]
     public bool IsJumped { get; set; }
+
+    [Parameter]
+    public bool IsActive { get; set; }
 
     [Parameter]
     public EventCallback<Checker> CheckerClicked { get; set; }

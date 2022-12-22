@@ -1,0 +1,49 @@
+﻿@inject HubManager HubManager
+
+
+@if (_inGame)
+{
+    <CheckersBoardComponent HubConnection="HubManager.HubConnection" BoardInfo="_tableInfo" />
+}
+else
+{
+    <button @onclick="CreateGame">Create Game</button>
+
+    foreach (var table in tables)
+    {
+        <div>
+            <button @onclick="() => JoinGame(table)">Join Game @table</button>
+        </div>
+    }
+}
+
+@code {
+
+    private bool _inGame = false;
+    private List<string> tables = new();
+    private BoardInfo _tableInfo = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        tables = await HubManager.RefreshTables();
+    }
+
+    async Task CreateGame()
+    {
+        _tableInfo.Id = Guid.NewGuid().ToString();
+        await HubManager.CreateGame(_tableInfo.Id);
+        _tableInfo.IsWhitePlayer = true;
+
+        _inGame = true;
+    }
+
+    async Task JoinGame(string joinedTableId)
+    {
+        await HubManager.JoinGame(joinedTableId);
+
+        _tableInfo.Id = joinedTableId;
+        _tableInfo.IsWhitePlayer = false;
+
+        _inGame = true;
+    }
+}

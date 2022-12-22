@@ -24,6 +24,7 @@
                             {
                                 <CheckerComponent Checker="checker"
                                   IsEnabled="_board.EnabledCheckers.Contains(checker) && BoardInfo.IsWhitePlayer == _board.IsWhiteTurn"
+                                  IsActive="checker.Equals(_board.ActiveChecker)"
                                   IsJumped="_board.JumpedCheckers.Contains(checker)"
                                   CheckerClicked="CheckerClicked" />
                             }
